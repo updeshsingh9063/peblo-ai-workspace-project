@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  email        String    @unique
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  notes        Note[]
+}
+
+model Note {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  title       String      @default("Untitled")
+  content     String      @default("")
+  isArchived  Boolean     @default(false)
+  isPublic    Boolean     @default(false)
+  shareId     String?     @unique
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  userId      String      @db.ObjectId
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tagIds      String[]    @db.ObjectId
+  tags        Tag[]       @relation(fields: [tagIds], references: [id])
+  aiSummaries AISummary[]
+
+  @@index([userId])
+  @@index([userId, isArchived])
+}
+
+model Tag {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  name    String   @unique
+  noteIds String[] @db.ObjectId
+  notes   Note[]   @relation(fields: [noteIds], references: [id])
+}
+
+model AISummary {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  noteId         String   @db.ObjectId
+  summary        String
+  actionItems    String[]
+  suggestedTitle String?
+  keyTopics      String[]
+  createdAt      DateTime @default(now())
+  note           Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@index([noteId])
+}
