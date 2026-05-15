@@ -33,6 +33,10 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
+app.get('/', (_req, res) => {
+  res.send('<h1>Peblo AI Notes API</h1><p>The backend is running perfectly. Use <code>/api/health</code> for diagnostic status.</p>');
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({
     success: true,
