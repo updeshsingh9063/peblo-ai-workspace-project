@@ -6,9 +6,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { toast } from 'sonner';
-import { LayoutDashboard, FileText, CheckCircle2, Sparkles, Plus, LogOut, ChevronLeft, ChevronRight, Loader2, Hash } from 'lucide-react';
+import { LayoutDashboard, FileText, CheckCircle2, Sparkles, LogOut, ChevronLeft, ChevronRight, Hash } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
+import CreateNoteButton from '@/components/notes/CreateNoteButton';
 
 interface SidebarProps {
   user: { name: string; email: string };
@@ -25,7 +25,6 @@ export default function Sidebar({ user }: SidebarProps) {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -46,22 +45,7 @@ export default function Sidebar({ user }: SidebarProps) {
     localStorage.setItem('sidebar-collapsed', String(next));
   }
 
-  async function handleNewNote() {
-    setCreating(true);
-    try {
-      const res = await fetch('/api/notes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: 'Untitled Note', content: '', tags: [] }),
-      });
-      const data: { success: boolean; data?: { id: string } } = await res.json();
-      if (data.success && data.data?.id) {
-        router.push(`/dashboard/notes/${data.data.id}`);
-        toast.success('New note created ✦');
-      } else toast.error('Failed to create note');
-    } catch { toast.error('Something went wrong'); }
-    finally { setCreating(false); }
-  }
+
 
   const isActive = (href: string) => {
     if (href === '/dashboard') return pathname === '/dashboard';
@@ -123,22 +107,16 @@ export default function Sidebar({ user }: SidebarProps) {
 
       {/* New Note button */}
       <div style={{ padding: collapsed ? '12px 10px' : '12px 14px' }}>
-        <button onClick={handleNewNote} disabled={creating} style={{
-          width: '100%', padding: collapsed ? '10px' : '10px 14px',
-          background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
-          border: 'none', borderRadius: 10, color: 'white',
-          fontSize: 13, fontWeight: 700, cursor: creating ? 'not-allowed' : 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start',
-          gap: 8, transition: 'all 0.2s', fontFamily: 'inherit',
-          boxShadow: '0 4px 16px rgba(124,58,237,0.35)',
-          opacity: creating ? 0.7 : 1,
-        }}
-        onMouseEnter={e => { if (!creating) (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(124,58,237,0.5)'; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(124,58,237,0.35)'; }}
-        >
-          {creating ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-          {!collapsed && 'New Note'}
-        </button>
+        <CreateNoteButton 
+          collapsed={collapsed}
+          style={{
+            width: '100%', padding: collapsed ? '10px' : '10px 14px',
+            background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
+            border: 'none', borderRadius: 10, color: 'white',
+            fontSize: 13, fontWeight: 700, fontFamily: 'inherit',
+            boxShadow: '0 4px 16px rgba(124,58,237,0.35)',
+          }}
+        />
       </div>
 
       {/* Nav */}

@@ -5,8 +5,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { Search, Plus, Tag, X, Archive, Loader2, FileText } from 'lucide-react';
+import { Search, Tag, X, Archive, FileText } from 'lucide-react';
 import NoteCard from './NoteCard';
+import CreateNoteButton from './CreateNoteButton';
 import type { NoteListItem } from '@/types';
 
 export default function NoteListView() {
@@ -16,7 +17,6 @@ export default function NoteListView() {
   const [notes, setNotes] = useState<NoteListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
   const [query, setQuery] = useState(searchParams.get('q') ?? '');
   const [tagFilter, setTagFilter] = useState(searchParams.get('tag') ?? '');
   const [sort, setSort] = useState<'updatedAt' | 'createdAt' | 'title'>('updatedAt');
@@ -42,21 +42,7 @@ export default function NoteListView() {
     return () => clearTimeout(timer);
   }, [fetchNotes]);
 
-  async function createNote() {
-    setCreating(true);
-    try {
-      const res = await fetch('/api/notes', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: 'Untitled Note', content: '', tags: [] }),
-      });
-      const data: { success: boolean; data?: { id: string } } = await res.json();
-      if (data.success && data.data?.id) {
-        router.push(`/dashboard/notes/${data.data.id}`);
-        toast.success('Note created ✦');
-      }
-    } catch { toast.error('Failed to create note'); }
-    finally { setCreating(false); }
-  }
+
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
@@ -75,23 +61,16 @@ export default function NoteListView() {
               {total} {total === 1 ? 'note' : 'notes'}{tagFilter ? ` tagged #${tagFilter}` : ''}
             </p>
           </div>
-          <button
+          <CreateNoteButton 
             id="create-note-btn"
-            onClick={createNote}
-            disabled={creating}
             style={{
-              display: 'flex', alignItems: 'center', gap: 8,
               padding: '9px 18px', borderRadius: 10,
               background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
               color: 'white', border: 'none', fontSize: 13, fontWeight: 700,
-              cursor: creating ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
               boxShadow: '0 4px 16px rgba(124,58,237,0.4)',
-              opacity: creating ? 0.7 : 1, transition: 'all 0.2s',
+              transition: 'all 0.2s',
             }}
-          >
-            {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-            New Note
-          </button>
+          />
         </div>
 
         {/* Search + Filters */}
@@ -178,7 +157,7 @@ export default function NoteListView() {
             ))}
           </div>
         ) : notes.length === 0 ? (
-          <EmptyState query={query} archived={archived} onCreate={createNote} />
+          <EmptyState query={query} archived={archived} />
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px,1fr))', gap: 16 }}>
             {notes.map(note => (
@@ -191,7 +170,7 @@ export default function NoteListView() {
   );
 }
 
-function EmptyState({ query, archived, onCreate }: { query: string; archived: boolean; onCreate: () => void }) {
+function EmptyState({ query, archived }: { query: string; archived: boolean }) {
   return (
     <div style={{ textAlign: 'center', padding: '80px 20px' }}>
       <div style={{
@@ -208,16 +187,15 @@ function EmptyState({ query, archived, onCreate }: { query: string; archived: bo
         {query ? 'Try a different search term' : archived ? 'Archived notes will appear here' : 'Create your first note to get started'}
       </p>
       {!query && !archived && (
-        <button onClick={onCreate} style={{
-          display: 'inline-flex', alignItems: 'center', gap: 8,
-          padding: '12px 28px', borderRadius: 12,
-          background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
-          color: 'white', border: 'none', fontSize: 14, fontWeight: 700,
-          cursor: 'pointer', boxShadow: '0 8px 24px rgba(124,58,237,0.4)',
-          fontFamily: 'inherit',
-        }}>
-          <Plus size={16} /> Create first note
-        </button>
+        <CreateNoteButton 
+          style={{
+            display: 'inline-flex',
+            padding: '12px 28px', borderRadius: 12,
+            background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
+            color: 'white', border: 'none', fontSize: 14, fontWeight: 700,
+            boxShadow: '0 8px 24px rgba(124,58,237,0.4)',
+          }}
+        />
       )}
     </div>
   );

@@ -7,6 +7,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { createNoteSchema, noteQuerySchema } from '@/lib/validations';
 import { apiSuccess, apiError } from '@/lib/utils';
+import crypto from 'crypto';
 
 export async function GET(req: NextRequest) {
   try {
@@ -127,6 +128,7 @@ export async function POST(req: NextRequest) {
         title,
         content,
         userId,
+        shareId: crypto.randomBytes(12).toString('hex'), // Ensure uniqueness from the start
         tags: {
           connect: dbTags.map((t) => ({ id: t.id })),
         },
@@ -137,8 +139,9 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(apiSuccess(note), { status: 201 });
-  } catch (err) {
-    console.error('[POST /api/notes]', err);
-    return NextResponse.json(apiError('Internal server error', 'INTERNAL_ERROR'), { status: 500 });
+  } catch (err: any) {
+    console.error('[POST /api/notes] Full Error:', err);
+    const message = err?.message || 'Internal server error';
+    return NextResponse.json(apiError(message, 'INTERNAL_ERROR'), { status: 500 });
   }
 }

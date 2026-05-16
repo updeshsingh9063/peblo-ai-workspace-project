@@ -25,7 +25,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         if (credentials?.email === 'demo@peblo.ai') {
           return {
-            id: 'demo-user-id',
+            id: '507f1f77bcf86cd799439011',
             name: 'Demo User',
             email: 'demo@peblo.ai',
           };

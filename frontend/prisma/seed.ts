@@ -11,11 +11,12 @@ async function main() {
   // Create demo user
   const passwordHash = await hash('demo1234', 12);
   const user = await prisma.user.upsert({
-    where: { email: 'demo@peblo.dev' },
+    where: { email: 'demo@peblo.ai' },
     update: {},
     create: {
+      id: '507f1f77bcf86cd799439011',
       name: 'Demo User',
-      email: 'demo@peblo.dev',
+      email: 'demo@peblo.ai',
       passwordHash,
     },
   });
@@ -191,7 +192,7 @@ The meeting recorder angle feels most urgent. Every company has this problem.
   console.log('✅ Seeding complete!');
   console.log('');
   console.log('Demo credentials:');
-  console.log('  Email: demo@peblo.dev');
+  console.log('  Email: demo@peblo.ai');
   console.log('  Password: demo1234');
 }
 
