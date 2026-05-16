@@ -6,10 +6,12 @@ import { toast } from 'sonner';
 import { Plus, Loader2 } from 'lucide-react';
 
 export default function CreateNoteButton({ 
+  id,
   className, 
   style, 
   collapsed = false 
 }: { 
+  id?: string;
   className?: string; 
   style?: React.CSSProperties;
   collapsed?: boolean;
@@ -44,6 +46,7 @@ export default function CreateNoteButton({
 
   return (
     <button 
+      id={id}
       onClick={handleCreate} 
       disabled={creating}
       className={className}
